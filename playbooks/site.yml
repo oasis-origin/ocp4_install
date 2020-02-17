@@ -1,0 +1,74 @@
+- name: Generate Installer URL with index_href
+  hosts: all
+  roles:
+    - name: oasis_roles.index_href
+      when: ocp_install_url is undefined
+  pre_tasks:
+    - name: Download OCP installer index
+      uri:
+        url: "{{ ocp_installers_index_url }}"
+        return_content: true
+      register: ocp_installers_index_uri
+      # CI downloads page is dynamically generated, and puts up a "please wait"
+      # message while it generates the index, so fail until the content contains
+      # the magic string to let us know the directory listing is available.
+      until: "'Index of' in ocp_installers_index_uri.content"
+    - name: Parse installer URL from index
+      set_fact:
+        ocp_install_url: >-
+          {{ query('index_href', ocp_installers_index_uri.content,
+             'install-linux', base_url=ocp_installers_index_url) }}
+
+- name: Get latest pull secrets using offline token
+  hosts: all
+  roles:
+    - name: oasis_roles.ocp_pull_secrets
+      # if desired, prepopulate ocp_pull_secrets with existing pull secrets
+      # passed through a |from_json filter, they'll be used in ocp
+      when: ocp_pull_secrets is undefined
+
+# credential installation is unique to each provider, and which
+# credentials are used depends on inventory host group membership
+- name: Install Azure Service Principal for automated deployment
+  hosts: azure
+  tasks:
+    - name: Ensure Azure Credentials dir exists
+      file:
+        path: "{{ az_config_dir }}"
+        state: directory
+    - name: Copy service principal JSON to host
+      copy:
+        src: "{{ az_os_service_principal_file }}"
+        dest: "{{ az_config_dir }}/osServicePrincipal.json"
+        remote_src: false
+
+- name: Install AWS credentials
+  hosts: aws
+  tasks:
+    - name: Ensure AWS Credentials dir exists
+      file:
+        path: "{{ aws_config_dir }}"
+        state: directory
+    - name: Copy AWS Key ID and Secret ini to host
+      copy:
+        src: "{{ aws_credentials_ini }}"
+        dest: "{{ aws_config_dir }}/credentials"
+        remote_src: false
+
+- name: Install GCP credentials
+  hosts: gcp
+  tasks:
+    - name: Ensure GCP Credentials dir exists
+      file:
+        path: "{{ gcp_config_dir }}"
+        state: directory
+    - name: Copy GCP service account JSON to host
+      copy:
+        src: "{{ gcp_service_account_file }}"
+        dest: "{{ gcp_config_dir }}/osServiceAccount.json"
+        remote_src: false
+
+- name: Run OpenShift Container Platform 4.x Installer
+  hosts: all
+  roles:
+    - oasis_roles.ocp_install

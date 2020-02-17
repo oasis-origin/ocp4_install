@@ -1,0 +1,15 @@
+# group vars for an IPI deployment in AWS
+
+# existing credentials ini file on control machine
+# containing key id and secret key for aws ocp deployment
+aws_credential_ini: /path/to/aws/credentials
+
+# directory into which aws credentials will be copied
+aws_config_dir: "~/.aws/"
+
+# ocp_install role vars specific to aws platform
+ocp_install_platform:
+  # "aws" platform key is required for all aws deployments
+  aws:
+    # name of resource group containing base domain dns zone
+    region: exampleregion

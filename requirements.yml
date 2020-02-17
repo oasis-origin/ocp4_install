@@ -1,0 +1,7 @@
+roles:
+  - name: oasis_roles.index_href
+    version: master
+  - name: oasis_roles.ocp_pull_secrets
+    version: master
+  - name: oasis_roles.ocp_install
+    version: master

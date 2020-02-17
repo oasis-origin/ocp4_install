@@ -1,0 +1,51 @@
+# Name of the cluster, prepended to base domain
+cluster_name: ocp4
+
+# Base domain for the cluster, usage of this domain depends on
+# which platform is used.
+base_domain: example.com
+
+# Path to an ssh pubkey file, whose private key component
+# is added to a local ssh-agent for use during installation
+ssh_pubkey_file: /path/to/your/pubkey
+
+# If using index_href to determine ocp_install_url, enter the path to
+# the openshift file index containing installers here
+ocp_installers_index_url: https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/
+
+# The OCP Pull Secrets offline token, which should be kept secure
+# Here, it is loaded using an environment variable
+ocp_pull_secrets_offline_token: "{{ lookup('env', 'OCP_PULL_SECRETS_OFFLINE_TOKEN') }}"
+
+# oasis_roles.ocp_install vars, common to all platforms
+# and using the manually entered values above
+# `ocp_install_platform` contains platform-specific values,
+# and is defined in platform-specific group_vars accordingly
+ocp_install_generate_config: true
+ocp_install_create_cluster: true
+ocp_install_destroy_cluster_on_failure: true
+ocp_install_base_domain: "{{ base_domain }}"
+ocp_install_config_dir: '/tmp/ocp_install'
+ocp_install_ssh_pubkey: "{{ lookup('file', ssh_pubkey_file) }}"
+ocp_install_api_version: v1
+ocp_install_compute:
+  - name: worker
+    platform: {}
+    replicas: 3
+ocp_install_control_plane:
+  name: master
+  platform: {}
+  replicas: 3
+ocp_install_metadata:
+  name: "{{ cluster_name }}"
+ocp_install_networking:
+  clusterNetwork:
+    - cidr: 10.128.0.0/14
+      hostPrefix: 23
+  networkType: OpenShiftSDN
+  serviceNetwork:
+    - 172.30.0.0/16
+ocp_install_publish: External
+
+# Generated via the ocp_pull_secrets role using the offline token above
+ocp_install_pull_secrets: "{{ ocp_pull_secrets }}"

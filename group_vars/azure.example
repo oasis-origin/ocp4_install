@@ -1,0 +1,16 @@
+# group vars for an IPI deployment in Azure
+
+# existing service principal json file on control machine
+# containing credentials for azure ocp deployment
+az_os_service_principal_file: /path/to/osServicePrincipal.json
+
+# directory into which azure credentials will be copied
+az_config_dir: "~/.azure/"
+
+# ocp_install role vars specific to azure platform
+ocp_install_platform:
+  # "azure" platform key is required for all azure deployments
+  azure:
+    # name of resource group containing base domain dns zone
+    baseDomainResourceGRoupName: resource-group
+    region: exampleregion

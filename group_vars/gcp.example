@@ -1,0 +1,17 @@
+# group vars for an IPI deployment in GCP
+
+# existing service account json file on control machine
+# containing credentials for gcp ocp deployment
+gcp_service_account_file: /path/to/osServiceAccount.json
+
+# directory into which gcp credentials will be copied
+gcp_config_dir: "~/.gcp/"
+
+# ocp_install role vars specific to gcp platform
+ocp_install_platform:
+  # "gcp" platform key is required for all gcp deployments
+  gcp:
+    # project ideally matches the project identified in the
+    # gcp service account json
+    projectID: your-project-123456
+    region: exampleregion
